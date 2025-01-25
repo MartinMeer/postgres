@@ -1,0 +1,62 @@
+Чтобы создать таблицу в PostgreSQL с полем, представляющим диапазон числовых значений (`numeric`), используйте тип данных **`numrange`**. Пример:
+
+```sql
+CREATE TABLE example_table (
+    id SERIAL PRIMARY KEY,
+    numeric_range numrange
+);
+```
+
+### Как это работает:
+1. **Тип `numrange`** предназначен для хранения непрерывных диапазонов чисел с произвольной точностью (например, `[10.5, 20.3)`, где квадратная скобка включает границу, а круглая — исключает).
+2. **`SERIAL`** создает автоматически инкрементируемый идентификатор.
+
+---
+
+### Пример вставки данных:
+```sql
+-- Диапазон [100.5, 200.0] (включая обе границы)
+INSERT INTO example_table (numeric_range) 
+VALUES ('[100.5, 200.0]'::numrange);
+
+-- Диапазон (50.0, 75.5) (исключая границы)
+INSERT INTO example_table (numeric_range) 
+VALUES ('(50.0, 75.5)'::numrange);
+```
+
+---
+
+### Проверка валидности диапазона:
+Добавьте ограничение `CHECK`, чтобы гарантировать, что нижняя граница не превышает верхнюю:
+```sql
+CREATE TABLE example_table (
+    id SERIAL PRIMARY KEY,
+    numeric_range numrange,
+    CHECK (lower(numeric_range) <= upper(numeric_range))
+);
+```
+
+---
+
+### Полезные функции для работы с диапазонами:
+- **Проверка пересечения диапазонов**: 
+  ```sql
+  SELECT * FROM example_table 
+  WHERE numeric_range && '[80.0, 150.0]'::numrange;
+  ```
+- **Получить границы диапазона**:
+  ```sql
+  SELECT lower(numeric_range), upper(numeric_range) 
+  FROM example_table;
+  ```
+
+---
+
+### Дополнительно:
+- Для использования индексов GiST (ускорение поиска по диапазонам) установите расширение и создайте индекс:
+  ```sql
+  CREATE EXTENSION IF NOT EXISTS btree_gist;
+  CREATE INDEX idx_numeric_range ON example_table USING GIST (numeric_range);
+  ```
+
+- Подробнее о диапазонах в документации: [PostgreSQL Range Types](https://www.postgresql.org/docs/current/rangetypes.html).
