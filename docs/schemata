@@ -1,0 +1,121 @@
+Чтобы посмотреть все таблицы в конкретной схеме PostgreSQL, есть несколько удобных способов. Вот подробное руководство:
+
+1. Через SQL-запросы
+a. Использование information_schema.tables
+Это стандартный способ, который работает во всех SQL-базах данных:
+
+sql
+Copy
+SELECT table_name 
+FROM information_schema.tables 
+WHERE table_schema = 'ваша_схема';
+Пример для схемы thread_m:
+
+sql
+Copy
+SELECT table_name 
+FROM information_schema.tables 
+WHERE table_schema = 'thread_m';
+Что вернет:
+
+Список всех таблиц в схеме thread_m.
+
+b. Использование системного каталога pg_catalog
+Это внутренние таблицы PostgreSQL:
+
+sql
+Copy
+SELECT tablename 
+FROM pg_catalog.pg_tables 
+WHERE schemaname = 'ваша_схема';
+Пример:
+
+sql
+Copy
+SELECT tablename 
+FROM pg_catalog.pg_tables 
+WHERE schemaname = 'thread_m';
+2. Через консоль psql
+Если вы используете командную строку PostgreSQL (psql), есть встроенные команды:
+
+a. Показать все таблицы в конкретной схеме
+sql
+Copy
+\dt ваша_схема.*
+Пример:
+
+sql
+Copy
+\dt thread_m.*
+Вывод:
+
+plaintext
+Copy
+           List of relations
+  Schema   |    Name    | Type  | Owner  
+-----------+------------+-------+--------
+ thread_m  | users      | table | olegmm
+ thread_m  | posts      | table | olegmm
+b. Показать таблицы с дополнительной информацией
+sql
+Copy
+\dt+ ваша_схема.*
+Это покажет размер таблиц, описание и другие детали.
+
+3. Через графический интерфейс (pgAdmin)
+Откройте базу данных в pgAdmin.
+
+Разверните ветку Schemas → выберите нужную схему → Tables.
+
+Здесь отобразятся все таблицы схемы.
+
+4. Как проверить, есть ли таблицы в схеме
+Если запросы возвращают пустой результат:
+
+Убедитесь, что вы указали правильное имя схемы (регистр важен, если имя взято в кавычки при создании).
+
+Проверьте права доступа:
+
+sql
+Copy
+-- Дать себе права на просмотр таблиц
+GRANT USAGE ON SCHEMA thread_m TO ваш_пользователь;
+GRANT SELECT ON ALL TABLES IN SCHEMA thread_m TO ваш_пользователь;
+5. Показать таблицы + их структуру
+Чтобы увидеть не только названия, но и столбцы, выполните:
+
+sql
+Copy
+SELECT table_name, column_name, data_type 
+FROM information_schema.columns 
+WHERE table_schema = 'thread_m';
+Примеры из вашего случая
+Для схемы thread_m:
+
+sql
+Copy
+-- Список таблиц
+SELECT table_name 
+FROM information_schema.tables 
+WHERE table_schema = 'thread_m';
+
+-- Список таблиц с владельцами
+SELECT tablename, tableowner 
+FROM pg_catalog.pg_tables 
+WHERE schemaname = 'thread_m';
+Советы
+Если схема содержит много объектов, используйте фильтрацию:
+
+sql
+Copy
+-- Найти таблицы по шаблону имени
+SELECT table_name 
+FROM information_schema.tables 
+WHERE table_schema = 'thread_m' AND table_name LIKE 'user%';
+Чтобы посмотреть представления (views) в схеме:
+
+sql
+Copy
+SELECT table_name 
+FROM information_schema.views 
+WHERE table_schema = 'thread_m';
